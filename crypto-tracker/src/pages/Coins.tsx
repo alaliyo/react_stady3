@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from 'react-query';
 import styled from 'styled-components';
+import { useSetRecoilState, useRecoilValue } from 'recoil';
+import { fetchCoins } from '../api';
+import { isDarkAtom } from '../atoms';
 
-interface CoinInterface {
+interface ICoin {
     id: string,
     name: string,
     symbol: string,
@@ -12,30 +16,26 @@ interface CoinInterface {
     type: string,
 }
 
+interface ICoinsProps {
+}
+
 function Coins() {
-    const [coins, setCions] = useState<CoinInterface[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        (async () => {
-            const response = await(
-                await fetch("https://api.coinpaprika.com/v1/coins")
-                ).json();
-            setCions(response.slice(0, 100));
-            setLoading(false);
-        })();
-    }, []);
-
-    console.log(coins);
+    const isDark = useRecoilValue(isDarkAtom);
+    const setterFn = useSetRecoilState(isDarkAtom);
+    // react-query로 api get
+    const { isLoading, data } = useQuery<ICoin[]>('allCoins', fetchCoins);
 
     return (
         <Container>
             <Header>
                 <Title>Coins</Title>
+                <button onClick={() => setterFn(e => !e)}>
+                    {isDark ? '화이트' : '다크' }
+                </button>
             </Header>
-            {loading ? <Loader>Loading</Loader> : (
+            {isLoading ? <Loader>Loading...</Loader> : (
                 <CoinsList>
-                {coins.map(coin => (
+                {data?.slice(0, 100).map(coin => (
                     <Coin key={coin.id}>
                         <Link to={{
                             pathname: `/${coin.id}`,
@@ -75,13 +75,13 @@ const CoinsList = styled.ul`
 `;
 
 const Coin = styled.li`
-    background-color: white;
-    color: ${p => p.theme.bgColor};
+    background-color: ${p => p.theme.btnColor};
     font-size: 20px;
     font-weight: 900;
     border-radius: 15px;
     margin-bottom: 10px;
     a {
+        color: ${p => p.theme.bgColor};
         display: flex;
         align-items: center;
         padding: 20px;
