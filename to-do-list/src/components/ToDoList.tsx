@@ -1,17 +1,20 @@
-import { useState } from "react";
-import { useForm } from 'react-hook-form';
+import { useRecoilState } from 'recoil';
+import CreateToDo from './CreateToDo';
+import { toDoState } from '../atoms';
+import ToDo from './ToDo';
+
 
 function ToDoList() {
-    const { register, watch } = useForm();
-    console.log(watch());
+    const [toDos] = useRecoilState(toDoState);
+    console.log(toDos);
     return(
         <div>
-            <form>
-                <input {...register('Email')} type="email" placeholder="아이디를 입력해주세요" />
-                <input {...register('Password')} type="password" placeholder="비밀번호를 입력해주세요" />
-                <input {...register('Password2')} type="password" placeholder="다시 비밀번호를 입력해주세요" />
-                <button>완료</button>
-            </form>
+            <h1>To Dos</h1>
+            <hr />
+            <CreateToDo />
+            <ul>
+                {toDos.map((toDo) => <ToDo key={toDo.id} {...toDo} />)}
+            </ul>
         </div>
     );
 }
